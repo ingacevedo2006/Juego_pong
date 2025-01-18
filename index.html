@@ -19,11 +19,12 @@
       border: 2px solid black;
       margin-top: 20px;
     }
-    #panel {
+    #pantalla-inicial {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 10px;
+      gap: 15px;
+      margin-top: 50px;
     }
     button {
       padding: 10px 20px;
@@ -34,19 +35,27 @@
       padding: 5px;
       font-size: 16px;
     }
+    #panel-juego {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
   </style>
 </head>
 <body>
-  <div id="panel">
-    <div>
-      <label for="playerName">Nombre del jugador: </label>
-      <input type="text" id="playerName" placeholder="Tu nombre">
-      <button onclick="startGame()">Iniciar Juego</button>
-    </div>
-    <button id="pauseButton" onclick="togglePause()" disabled>Pausar</button>
+  <!-- Pantalla inicial -->
+  <div id="pantalla-inicial">
+    <h1>¿Quiere jugar?</h1>
+    <label for="nombre-jugador">Ingrese su nombre:</label>
+    <input type="text" id="nombre-jugador" placeholder="Tu nombre aquí">
+    <button onclick="iniciarJuego()">Iniciar Juego</button>
+  </div>
+
+  <!-- Panel del juego -->
+  <div id="panel-juego">
+    <button id="pauseButton" onclick="togglePause()">Pausar</button>
     <h3 id="score">Puntaje: 0 - 0</h3>
   </div>
 </body>
 </html>
-
-
