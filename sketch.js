@@ -10,7 +10,10 @@ let pcPuntaje = 0;
 let juegoActivo = false;
 
 function setup() {
-  createCanvas(800, 400);
+  // Crear el canvas y ocultarlo inicialmente
+  let canvas = createCanvas(800, 400);
+  canvas.parent("panel-juego");
+  noLoop(); // El juego no iniciará hasta que el jugador haga clic en "Iniciar Juego"
 
   // Crear la pelota
   pelota = {
@@ -110,16 +113,30 @@ function updateScore() {
   document.getElementById("score").innerText = `Puntaje: ${jugadorPuntaje} - ${pcPuntaje}`;
 }
 
-function startGame() {
-  const inputName = document.getElementById("playerName").value;
-  if (inputName.trim() !== "") {
-    jugadorNombre = inputName;
+function iniciarJuego() {
+  const inputNombre = document.getElementById("nombre-jugador").value;
+  if (inputNombre.trim() === "") {
+    alert("Por favor, ingresa tu nombre antes de comenzar.");
+    return;
   }
+
+  // Asignar el nombre del jugador y mostrar el panel de juego
+  jugadorNombre = inputNombre;
+  document.getElementById("pantalla-inicial").style.display = "none";
+  document.getElementById("panel-juego").style.display = "flex";
+
+  // Iniciar el juego
   juegoActivo = true;
-  document.getElementById("pauseButton").disabled = false;
+  loop(); // Activar el bucle del juego
 }
 
 function togglePause() {
   juegoActivo = !juegoActivo;
-  document.getElementById("pauseButton").innerText = juegoActivo ? "Pausar" : "Reanudar";
+  if (juegoActivo) {
+    loop();
+    document.getElementById("pauseButton").innerText = "Pausar";
+  } else {
+    noLoop();
+    document.getElementById("pauseButton").innerText = "Reanudar";
+  }
 }
