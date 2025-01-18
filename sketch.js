@@ -1,93 +1,125 @@
-let bola;
-let velocidadX = 5;
-let velocidadY = 3;
+let jugadorNombre = "Jugador";
+let jugadorColor = "#3498db";
+let pcColor = "#e74c3c";
 
-let jugadorY, pcY;
-const anchoRaqueta = 10;
-const altoRaqueta = 80;
-
-const margen = 20;
-const velocidadRaqueta = 5;
-const anchoCanvas = 800;
-const altoCanvas = 400;
-
+let pelota;
+let jugador;
+let pc;
+let jugadorPuntaje = 0;
+let pcPuntaje = 0;
+let juegoActivo = false;
 
 function setup() {
-  createCanvas(anchoCanvas, altoCanvas);
+  createCanvas(800, 400);
 
-  // Posiciones iniciales
-  bola = createVector(width / 2, height / 2);
-  jugadorY = height / 2 - altoRaqueta / 2;
-  pcY = height / 2 - altoRaqueta / 2;
+  // Crear la pelota
+  pelota = {
+    x: width / 2,
+    y: height / 2,
+    r: 10,
+    vx: 5,
+    vy: 5,
+  };
+
+  // Crear la raqueta del jugador
+  jugador = {
+    x: 20,
+    y: height / 2 - 50,
+    w: 10,
+    h: 100,
+  };
+
+  // Crear la raqueta del PC
+  pc = {
+    x: width - 30,
+    y: height / 2 - 50,
+    w: 10,
+    h: 100,
+  };
 }
-
 
 function draw() {
-  background(0);
+  background(30);
 
-  // Dibujar la bola
-  ellipse(bola.x, bola.y, 15, 15);
+  if (juegoActivo) {
+    // Dibujar la pelota
+    fill(255);
+    ellipse(pelota.x, pelota.y, pelota.r * 2);
 
-  // Dibujar la raqueta del jugador
-  rect(margen, jugadorY, anchoRaqueta, altoRaqueta);
+    // Mover la pelota
+    pelota.x += pelota.vx;
+    pelota.y += pelota.vy;
 
-  // Dibujar la raqueta del PC
-  rect(width - margen - anchoRaqueta, pcY, anchoRaqueta, altoRaqueta);
+    // Rebotar en las paredes
+    if (pelota.y <= 0 || pelota.y >= height) pelota.vy *= -1;
 
-  // Actualizar la lógica del juego
-  moverBola();
-  moverRaquetaPC();
-  controlarJugador();
+    // Colisión con el jugador
+    if (
+      pelota.x - pelota.r < jugador.x + jugador.w &&
+      pelota.y > jugador.y &&
+      pelota.y < jugador.y + jugador.h
+    ) {
+      pelota.vx *= -1;
+      pelota.x = jugador.x + jugador.w + pelota.r;
+    }
+
+    // Colisión con el PC
+    if (
+      pelota.x + pelota.r > pc.x &&
+      pelota.y > pc.y &&
+      pelota.y < pc.y + pc.h
+    ) {
+      pelota.vx *= -1;
+      pelota.x = pc.x - pelota.r;
+    }
+
+    // Fuera de la pantalla: Puntaje
+    if (pelota.x < 0) {
+      pcPuntaje++;
+      resetPelota();
+    } else if (pelota.x > width) {
+      jugadorPuntaje++;
+      resetPelota();
+    }
+
+    // Dibujar las raquetas
+    fill(jugadorColor);
+    rect(jugador.x, jugador.y, jugador.w, jugador.h);
+
+    fill(pcColor);
+    rect(pc.x, pc.y, pc.w, pc.h);
+
+    // Movimiento del jugador (con el mouse)
+    jugador.y = constrain(mouseY - jugador.h / 2, 0, height - jugador.h);
+
+    // Movimiento del PC (automático)
+    pc.y = constrain(pelota.y - pc.h / 2, 0, height - pc.h);
+
+    // Actualizar el puntaje
+    updateScore();
+  }
 }
 
-
-function moverBola() {
-  bola.x += velocidadX;
-  bola.y += velocidadY;
-
-  // Rebote en las paredes superior e inferior
-  if (bola.y <= 0 || bola.y >= height) {
-    velocidadY *= -1;
-  }
-
-  // Colisión con la raqueta del jugador
-  if (bola.x <= margen + anchoRaqueta && bola.y >= jugadorY && bola.y <= jugadorY + altoRaqueta) {
-    velocidadX *= -1;
-  }
-
-  // Colisión con la raqueta del PC
-  if (bola.x >= width - margen - anchoRaqueta && bola.y >= pcY && bola.y <= pcY + altoRaqueta) {
-    velocidadX *= -1;
-  }
-
-  // Reinicio si se pierde la bola
-  if (bola.x < 0 || bola.x > width) {
-    bola.set(width / 2, height / 2);
-    velocidadX *= -1;
-  }
+function resetPelota() {
+  pelota.x = width / 2;
+  pelota.y = height / 2;
+  pelota.vx *= -1; // Cambiar dirección de la pelota
 }
 
-
-function controlarJugador() {
-  if (keyIsDown(UP_ARROW)) {
-    jugadorY -= velocidadRaqueta;
-  }
-  if (keyIsDown(DOWN_ARROW)) {
-    jugadorY += velocidadRaqueta;
-  }
-
-  // Limitar los movimientos de la raqueta del jugador
-  jugadorY = constrain(jugadorY, 0, height - altoRaqueta);
+function updateScore() {
+  document.getElementById("score").innerText = `Puntaje: ${jugadorPuntaje} - ${pcPuntaje}`;
 }
 
-
-function moverRaquetaPC() {
-  if (bola.y > pcY + altoRaqueta / 2) {
-    pcY += velocidadRaqueta;
-  } else if (bola.y < pcY + altoRaqueta / 2) {
-    pcY -= velocidadRaqueta;
+function startGame() {
+  const inputName = document.getElementById("playerName").value;
+  if (inputName.trim() !== "") {
+    jugadorNombre = inputName;
   }
+  juegoActivo = true;
+  document.getElementById("pauseButton").disabled = false;
+}
 
-  // Limitar los movimientos de la raqueta del PC
-  pcY = constrain(pcY, 0, height - altoRaqueta);
+function togglePause() {
+  juegoActivo = !juegoActivo;
+  document.getElementById("pauseButton").innerText = juegoActivo ? "Pausar" : "Reanudar";
 }
