@@ -52,7 +52,7 @@ function mostrarPantallaInicial() {
   
   
   // Cuadro de entrada para el nombre
-  let input = createInput().position(width / 2 - 100, , yOffset);
+  let input = createInput().position(width / 2 - 100,  yOffset);
   input.input(() => {
     nombreJugador = input.value();
   });
