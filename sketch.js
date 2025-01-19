@@ -1,142 +1,164 @@
-let jugadorNombre = "Jugador";
-let jugadorColor = "#3498db";
-let pcColor = "#e74c3c";
+let anchoCanvas = 800;
+let altoCanvas = 400;
 
-let pelota;
-let jugador;
-let pc;
-let jugadorPuntaje = 0;
-let pcPuntaje = 0;
-let juegoActivo = false;
+let jugadorX = 15;
+let jugadorY;
+let anchoRaqueta = 10;
+let altoRaqueta = 100;
+
+let computadoraX = anchoCanvas - 25;
+let computadoraY;
+
+let pelotaX, pelotaY;
+let diametroPelota = 20;
+let velocidadPelotaX = 5;
+let velocidadPelotaY = 5;
 let anguloPelota = 0;
 
-let fondoImg; // Imagen de fondo
-let bolaImg;  // Imagen de la pelota
+let grosorMarco = 10;
+
+let jugadorScore = 0;
+let computadoraScore = 0;
+
+let fondo;
+let barraJugador;
+let barraComputadora;
+let bola;
+let sonidoRebote;
+let sonidoGol;
 
 function preload() {
-  fondoImg = loadImage("fondo2.png");
-  bolaImg = loadImage("bola.png");
+    fondo = loadImage('fondo1.png');
+    barraJugador = loadImage('barra1.png');
+    barraComputadora = loadImage('barra2.png');
+    bola = loadImage('bola.png');
+    sonidoRebote = loadSound('bounce.wav');
+    sonidoGol = loadSound('jingle_win_synth_02.wav');
 }
 
 function setup() {
-  let canvas = createCanvas(800, 400);
-  canvas.parent("canvas-container");
-  noLoop();
-
-  pelota = { x: width / 2, y: height / 2, r: 10, vx: 5, vy: 5, velocidad: 5 };
-
-  jugador = { x: 20, y: height / 2 - 50, w: 10, h: 100 };
-  pc = { x: width - 30, y: height / 2 - 50, w: 10, h: 100 };
+    createCanvas(anchoCanvas, altoCanvas);
+    jugadorY = height / 2 - altoRaqueta / 2;
+    computadoraY = height / 2 - altoRaqueta / 2;
+    resetPelota();
 }
 
 function draw() {
-  background(0);
+    background(fondo);
+    dibujarMarcos();
+    dibujarRaquetas();
+    dibujarPelota();
+    mostrarPuntaje();
+    moverPelota();
+    moverComputadora();
+    verificarColisiones();
+}
 
-  // Dibujar marcos
-  stroke(255);
-  strokeWeight(5);
-  line(0, 0, width, 0); // Marco superior
-  line(0, height, width, height); // Marco inferior
+function dibujarMarcos() {
+    fill(color("#2B3FD6"));
+    rect(0, 0, width, grosorMarco); // Marco superior
+    rect(0, height - grosorMarco, width, grosorMarco); // Marco inferior
+}
 
-  // Dibujar línea divisoria
-  strokeWeight(2);
-  line(width / 2, 0, width / 2, height);
+function dibujarRaquetas() {
+    image(barraJugador, jugadorX, jugadorY, anchoRaqueta, altoRaqueta);
+    image(barraComputadora, computadoraX, computadoraY, anchoRaqueta, altoRaqueta);
+}
 
-  // Dibujar nombres y puntajes
-  fill(255);
-  textSize(16);
-  textAlign(CENTER, CENTER);
-  text(`${jugadorNombre}: ${jugadorPuntaje}`, width / 4, 20);
-  text(`PC: ${pcPuntaje}`, (3 * width) / 4, 20);
-
-  if (juegoActivo) {
+function dibujarPelota() {
     push();
-    translate(pelota.x, pelota.y);
-    rotate(radians(anguloPelota)); // Rotación de la pelota
-    image(bolaImg, -pelota.r, -pelota.r, pelota.r * 2, pelota.r * 2);
+    translate(pelotaX, pelotaY);
+    rotate(anguloPelota);
+    imageMode(CENTER);
+    image(bola, 0, 0, diametroPelota, diametroPelota);
     pop();
+}
 
-    pelota.x += pelota.vx;
-    pelota.y += pelota.vy;
+function mostrarPuntaje() {
+    textSize(32);
+    textAlign(CENTER, CENTER);
+    fill(color("#2B3FD6"));
+    text(jugadorScore, width / 4, grosorMarco * 3);
+    text(computadoraScore, 3 * width / 4, grosorMarco * 3);
+}
 
-    if (pelota.y <= 0 || pelota.y >= height) {
-      pelota.vy *= -1;
-      anguloPelota += 45; // Rotación extra en las colisiones
+function moverPelota() {
+    pelotaX += velocidadPelotaX;
+    pelotaY += velocidadPelotaY;
+
+    // Ajustar el ángulo de la pelota en función de su velocidad
+    let velocidadTotal = sqrt(velocidadPelotaX * velocidadPelotaX + velocidadPelotaY * velocidadPelotaY);
+    anguloPelota += velocidadTotal * 0.05;
+
+    // Colisión con el marco superior e inferior
+    if (pelotaY - diametroPelota / 2 < grosorMarco || 
+        pelotaY + diametroPelota / 2 > height - grosorMarco) {
+        velocidadPelotaY *= -1;
+    }
+}
+
+function moverComputadora() {
+    if (pelotaY > computadoraY + altoRaqueta / 2) {
+        computadoraY += 4;
+    } else if (pelotaY < computadoraY + altoRaqueta / 2) {
+        computadoraY -= 4;
+    }
+    computadoraY = constrain(computadoraY, grosorMarco, height - grosorMarco - altoRaqueta);
+}
+
+function verificarColisiones() {
+    // Colisión con la raqueta del jugador
+    if (pelotaX - diametroPelota / 2 < jugadorX + anchoRaqueta && 
+        pelotaY > jugadorY && pelotaY < jugadorY + altoRaqueta) {
+        let puntoImpacto = pelotaY - (jugadorY + altoRaqueta / 2);
+        let factorAngulo = (puntoImpacto / (altoRaqueta / 2)) * PI / 3; // Ángulo máximo de 60 grados
+        velocidadPelotaY = 10 * sin(factorAngulo);
+        velocidadPelotaX *= -1;
+        sonidoRebote.play(); // Reproducir sonido de rebote
     }
 
-    if (
-      pelota.x - pelota.r < jugador.x + jugador.w &&
-      pelota.y > jugador.y &&
-      pelota.y < jugador.y + jugador.h
-    ) {
-      pelota.vx *= -1.1; // Aumentar velocidad al colisionar
-      pelota.velocidad *= 1.05;
-      pelota.vx = constrain(pelota.vx, -10, 10);
-      anguloPelota += 45;
+    // Colisión con la raqueta de la computadora
+    if (pelotaX + diametroPelota / 2 > computadoraX && 
+        pelotaY > computadoraY && pelotaY < computadoraY + altoRaqueta) {
+        let puntoImpacto = pelotaY - (computadoraY + altoRaqueta / 2);
+        let factorAngulo = (puntoImpacto / (altoRaqueta / 2)) * PI / 3; // Ángulo máximo de 60 grados
+        velocidadPelotaY = 10 * sin(factorAngulo);
+        velocidadPelotaX *= -1;
+        sonidoRebote.play(); // Reproducir sonido de rebote
     }
 
-    if (
-      pelota.x + pelota.r > pc.x &&
-      pelota.y > pc.y &&
-      pelota.y < pc.y + pc.h
-    ) {
-      pelota.vx *= -1.1;
-      pelota.velocidad *= 1.05;
-      anguloPelota += 45;
+    // Colisión con los bordes izquierdo y derecho (anotación y reinicio)
+    if (pelotaX < 0) {
+        computadoraScore++;
+        sonidoGol.play(); // Reproducir sonido de gol
+        narrarMarcador(); // Narrar marcador
+        resetPelota();
+    } else if (pelotaX > width) {
+        jugadorScore++;
+        sonidoGol.play(); // Reproducir sonido de gol
+        narrarMarcador(); // Narrar marcador
+        resetPelota();
     }
+}
 
-    if (pelota.x < 0) {
-      pcPuntaje++;
-      narrarGol("Gol del PC");
-      resetPelota();
-    } else if (pelota.x > width) {
-      jugadorPuntaje++;
-      narrarGol(`Gol de ${jugadorNombre}`);
-      resetPelota();
-    }
-
-    jugador.y = constrain(mouseY - jugador.h / 2, 0, height - jugador.h);
-    pc.y = constrain(pelota.y - pc.h / 2, 0, height - pc.h);
-
-    fill(jugadorColor);
-    rect(jugador.x, jugador.y, jugador.w, jugador.h);
-
-    fill(pcColor);
-    rect(pc.x, pc.y, pc.w, pc.h);
-  }
+function narrarMarcador() {
+    let narrador = new SpeechSynthesisUtterance(`El marcador es ${jugadorScore} a ${computadoraScore}`);
+    window.speechSynthesis.speak(narrador);
 }
 
 function resetPelota() {
-  pelota.x = width / 2;
-  pelota.y = height / 2;
-  pelota.vx = random([-5, 5]);
-  pelota.vy = random([-3, 3]);
+    pelotaX = width / 2;
+    pelotaY = height / 2;
+    velocidadPelotaX = 5 * (Math.random() > 0.5 ? 1 : -1);
+    velocidadPelotaY = 5 * (Math.random() > 0.5 ? 1 : -1);
+    anguloPelota = 0;
 }
 
-function iniciarJuego() {
-  const inputNombre = document.getElementById("nombre-jugador").value;
-  if (inputNombre.trim() === "") {
-    alert("Por favor, ingresa tu nombre antes de comenzar.");
-    return;
-  }
-  jugadorNombre = inputNombre;
-  document.getElementById("pantalla-inicial").style.display = "none";
-  document.getElementById("panel-juego").style.display = "flex";
-  juegoActivo = true;
-  loop();
-}
-
-function togglePause() {
-  juegoActivo = !juegoActivo;
-  if (juegoActivo) {
-    loop();
-  } else {
-    noLoop();
-  }
-}
-
-function narrarGol(texto) {
-  let mensaje = new SpeechSynthesisUtterance(texto);
-  mensaje.lang = "es-ES";
-  speechSynthesis.speak(mensaje);
+function keyPressed() {
+    if (keyCode === UP_ARROW) {
+        jugadorY -= 50;
+    } else if (keyCode === DOWN_ARROW) {
+        jugadorY += 50;
+    }
+    jugadorY = constrain(jugadorY, grosorMarco, height - grosorMarco - altoRaqueta);
 }
