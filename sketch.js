@@ -9,6 +9,13 @@ let jugadorPuntaje = 0;
 let pcPuntaje = 0;
 let juegoActivo = false;
 
+let fondo; // Imagen de fondo
+
+function preload() {
+  // Cargar la imagen de fondo
+  fondo = loadImage("fondo2.png");
+}
+
 function setup() {
   // Crear el canvas y ocultarlo inicialmente
   let canvas = createCanvas(800, 400);
@@ -42,7 +49,26 @@ function setup() {
 }
 
 function draw() {
-  background(30);
+  // Dibujar fondo
+  background(fondo);
+
+  // Línea intermitente
+  stroke(255);
+  strokeWeight(2);
+  for (let y = 0; y < height; y += 20) {
+    if ((frameCount / 10) % 2 < 1) {
+      line(width / 2, y, width / 2, y + 10);
+    }
+  }
+
+  // Dibujar puntaje en la cancha
+  textSize(32);
+  fill(jugadorColor);
+  textAlign(CENTER, CENTER);
+  text(jugadorPuntaje, width / 4, 30);
+
+  fill(pcColor);
+  text(pcPuntaje, (3 * width) / 4, 30);
 
   if (juegoActivo) {
     // Dibujar la pelota
@@ -85,7 +111,6 @@ function draw() {
       resetPelota();
     }
 
-
     // Dibujar las raquetas
     fill(jugadorColor);
     rect(jugador.x, jugador.y, jugador.w, jugador.h);
@@ -99,28 +124,10 @@ function draw() {
     // Movimiento del PC (automático)
     pc.y = constrain(pelota.y - pc.h / 2, 0, height - pc.h);
 
-    // Actualizar el puntaje
+    // Actualizar el puntaje en el marcador
     updateScore();
   }
 }
-
-
-function dibujarMarcos() {
-    fill(255);
-    rect(0, 0, width, grosorMarco); // Marco superior
-    rect(0, height - grosorMarco, width, grosorMarco); // Marco inferior
-}
-
-
-function mostrarPuntaje() {
-    textSize(32);
-    textAlign(CENTER, CENTER);
-    fill(255);
-    text(jugadorScore, width / 4, grosorMarco * 3);
-    text(computadoraScore, 3 * width / 4, grosorMarco * 3);
-}
-
-
 
 function resetPelota() {
   pelota.x = width / 2;
@@ -159,3 +166,4 @@ function togglePause() {
     document.getElementById("pauseButton").innerText = "Reanudar";
   }
 }
+
