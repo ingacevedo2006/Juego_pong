@@ -1,61 +1,54 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Juego Pong Mejorado</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.js"></script>
-  <script src="sketch.js" defer></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Juego Pong</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
       margin: 0;
-      padding: 20px;
-    }
-    canvas {
-      border: 2px solid black;
-      margin-top: 20px;
+      font-family: Arial, sans-serif;
+      color: white;
+      background-color: black;
     }
     #pantalla-inicial {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 15px;
-      margin-top: 50px;
-    }
-    button {
-      padding: 10px 20px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-    input {
-      padding: 5px;
-      font-size: 16px;
+      justify-content: center;
+      height: 100vh;
     }
     #panel-juego {
       display: none;
-      flex-direction: column;
       align-items: center;
-      gap: 10px;
+      justify-content: center;
+    }
+    h1 {
+      font-size: 48px;
+      margin-bottom: 10px;
+    }
+    p {
+      font-size: 20px;
+      margin-bottom: 20px;
+    }
+    input, button {
+      font-size: 16px;
+      padding: 10px;
+      margin: 5px;
     }
   </style>
 </head>
 <body>
-  <!-- Pantalla inicial -->
   <div id="pantalla-inicial">
-    <h1>¿Quiere jugar?</h1>
-    <label for="nombre-jugador">Ingrese su nombre:</label>
-    <input type="text" id="nombre-jugador" placeholder="Tu nombre aquí">
+    <h1>JUEGO PONG</h1>
+    <p>Realizado por: Sandra</p>
+    <input type="text" id="nombre-jugador" placeholder="Ingresa tu nombre" />
     <button onclick="iniciarJuego()">Iniciar Juego</button>
   </div>
-
-  <!-- Panel del juego -->
   <div id="panel-juego">
     <button id="pauseButton" onclick="togglePause()">Pausar</button>
-    <h3 id="score">Puntaje: 0 - 0</h3>
+    <div id="canvas-container"></div>
   </div>
+  <script src="sketch.js"></script>
 </body>
 </html>
