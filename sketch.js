@@ -8,123 +8,109 @@ let pc;
 let jugadorPuntaje = 0;
 let pcPuntaje = 0;
 let juegoActivo = false;
+let anguloPelota = 0;
 
 let fondoImg; // Imagen de fondo
 let bolaImg;  // Imagen de la pelota
 
 function preload() {
-  fondoImg = loadImage("fondo2.png"); // Cargar imagen de fondo
-  bolaImg = loadImage("bola.png");   // Cargar imagen de la pelota
+  fondoImg = loadImage("fondo2.png");
+  bolaImg = loadImage("bola.png");
 }
 
 function setup() {
-  // Crear el canvas y ocultarlo inicialmente
   let canvas = createCanvas(800, 400);
-  canvas.parent("panel-juego");
-  noLoop(); // El juego no iniciará hasta que el jugador haga clic en "Iniciar Juego"
+  canvas.parent("canvas-container");
+  noLoop();
 
-  // Crear la pelota
-  pelota = {
-    x: width / 2,
-    y: height / 2,
-    r: 10,
-    vx: 5,
-    vy: 5,
-  };
+  pelota = { x: width / 2, y: height / 2, r: 10, vx: 5, vy: 5, velocidad: 5 };
 
-  // Crear la raqueta del jugador
-  jugador = {
-    x: 20,
-    y: height / 2 - 50,
-    w: 10,
-    h: 100,
-  };
-
-  // Crear la raqueta del PC
-  pc = {
-    x: width - 30,
-    y: height / 2 - 50,
-    w: 10,
-    h: 100,
-  };
+  jugador = { x: 20, y: height / 2 - 50, w: 10, h: 100 };
+  pc = { x: width - 30, y: height / 2 - 50, w: 10, h: 100 };
 }
 
 function draw() {
-  // Dibujar el fondo
-  image(fondoImg, 0, 0, width, height);
+  background(0);
 
-  // Dibujar la línea divisoria
-  stroke(255); // Color blanco
-  strokeWeight(2); // Grosor de la línea
+  // Dibujar marcos
+  stroke(255);
+  strokeWeight(5);
+  line(0, 0, width, 0); // Marco superior
+  line(0, height, width, height); // Marco inferior
+
+  // Dibujar línea divisoria
+  strokeWeight(2);
   line(width / 2, 0, width / 2, height);
 
-  // Mostrar nombres y puntajes en la parte superior
-  noStroke();
-  fill(255); // Color blanco para texto
-  textAlign(CENTER, CENTER);
+  // Dibujar nombres y puntajes
+  fill(255);
   textSize(16);
-  text(`${jugadorNombre}: ${jugadorPuntaje}`, width / 4, 20); // Nombre y puntaje del jugador
-  text(`PC: ${pcPuntaje}`, (3 * width) / 4, 20);             // Nombre y puntaje del PC
+  textAlign(CENTER, CENTER);
+  text(`${jugadorNombre}: ${jugadorPuntaje}`, width / 4, 20);
+  text(`PC: ${pcPuntaje}`, (3 * width) / 4, 20);
 
   if (juegoActivo) {
-    // Dibujar la pelota como una imagen
-    image(bolaImg, pelota.x - pelota.r, pelota.y - pelota.r, pelota.r * 2, pelota.r * 2);
+    push();
+    translate(pelota.x, pelota.y);
+    rotate(radians(anguloPelota)); // Rotación de la pelota
+    image(bolaImg, -pelota.r, -pelota.r, pelota.r * 2, pelota.r * 2);
+    pop();
 
-    // Mover la pelota
     pelota.x += pelota.vx;
     pelota.y += pelota.vy;
 
-    // Rebotar en las paredes
-    if (pelota.y <= 0 || pelota.y >= height) pelota.vy *= -1;
+    if (pelota.y <= 0 || pelota.y >= height) {
+      pelota.vy *= -1;
+      anguloPelota += 45; // Rotación extra en las colisiones
+    }
 
-    // Colisión con el jugador
     if (
       pelota.x - pelota.r < jugador.x + jugador.w &&
       pelota.y > jugador.y &&
       pelota.y < jugador.y + jugador.h
     ) {
-      pelota.vx *= -1;
-      pelota.x = jugador.x + jugador.w + pelota.r;
+      pelota.vx *= -1.1; // Aumentar velocidad al colisionar
+      pelota.velocidad *= 1.05;
+      pelota.vx = constrain(pelota.vx, -10, 10);
+      anguloPelota += 45;
     }
 
-    // Colisión con el PC
     if (
       pelota.x + pelota.r > pc.x &&
       pelota.y > pc.y &&
       pelota.y < pc.y + pc.h
     ) {
-      pelota.vx *= -1;
-      pelota.x = pc.x - pelota.r;
+      pelota.vx *= -1.1;
+      pelota.velocidad *= 1.05;
+      anguloPelota += 45;
     }
 
-    // Fuera de la pantalla: Puntaje
     if (pelota.x < 0) {
       pcPuntaje++;
+      narrarGol("Gol del PC");
       resetPelota();
     } else if (pelota.x > width) {
       jugadorPuntaje++;
+      narrarGol(`Gol de ${jugadorNombre}`);
       resetPelota();
     }
 
-    // Dibujar las raquetas
+    jugador.y = constrain(mouseY - jugador.h / 2, 0, height - jugador.h);
+    pc.y = constrain(pelota.y - pc.h / 2, 0, height - pc.h);
+
     fill(jugadorColor);
     rect(jugador.x, jugador.y, jugador.w, jugador.h);
 
     fill(pcColor);
     rect(pc.x, pc.y, pc.w, pc.h);
-
-    // Movimiento del jugador (con el mouse)
-    jugador.y = constrain(mouseY - jugador.h / 2, 0, height - jugador.h);
-
-    // Movimiento del PC (automático)
-    pc.y = constrain(pelota.y - pc.h / 2, 0, height - pc.h);
   }
 }
 
 function resetPelota() {
   pelota.x = width / 2;
   pelota.y = height / 2;
-  pelota.vx *= -1; // Cambiar dirección de la pelota
+  pelota.vx = random([-5, 5]);
+  pelota.vy = random([-3, 3]);
 }
 
 function iniciarJuego() {
@@ -133,24 +119,24 @@ function iniciarJuego() {
     alert("Por favor, ingresa tu nombre antes de comenzar.");
     return;
   }
-
-  // Asignar el nombre del jugador y mostrar el panel de juego
   jugadorNombre = inputNombre;
   document.getElementById("pantalla-inicial").style.display = "none";
   document.getElementById("panel-juego").style.display = "flex";
-
-  // Iniciar el juego
   juegoActivo = true;
-  loop(); // Activar el bucle del juego
+  loop();
 }
 
 function togglePause() {
   juegoActivo = !juegoActivo;
   if (juegoActivo) {
     loop();
-    document.getElementById("pauseButton").innerText = "Pausar";
   } else {
     noLoop();
-    document.getElementById("pauseButton").innerText = "Reanudar";
   }
+}
+
+function narrarGol(texto) {
+  let mensaje = new SpeechSynthesisUtterance(texto);
+  mensaje.lang = "es-ES";
+  speechSynthesis.speak(mensaje);
 }
