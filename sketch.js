@@ -48,13 +48,13 @@ function mostrarPantallaInicial() {
   text("Por favor ingresa tu nombre para comenzar:", width / 2, height / 2 - 30);
 
   // Cuadro de entrada para el nombre
-  let input = createInput().position(width / 2 - 100, height / 2);
+  let input = createInput().position(width / 2 - 100, height / 2 + 10);
   input.input(() => {
     nombreJugador = input.value();
   });
 
   // Botón para iniciar el juego
-  let boton = createButton("Iniciar Juego").position(width / 2 - 50, height / 2 + 40);
+  let boton = createButton("Iniciar Juego").position(width / 2 - 50, height / 2 + 50);
   boton.mousePressed(() => {
     if (nombreJugador.trim() !== "") {
       juegoActivo = true;
