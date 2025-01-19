@@ -9,11 +9,12 @@ let jugadorPuntaje = 0;
 let pcPuntaje = 0;
 let juegoActivo = false;
 
-let fondo; // Imagen de fondo
+let fondoImg; // Imagen de fondo
+let bolaImg;  // Imagen de la pelota
 
 function preload() {
-  // Cargar la imagen de fondo
-  fondo = loadImage("fondo2.png");
+  fondoImg = loadImage("fondo2.png"); // Cargar imagen de fondo
+  bolaImg = loadImage("bola.png");   // Cargar imagen de la pelota
 }
 
 function setup() {
@@ -49,31 +50,25 @@ function setup() {
 }
 
 function draw() {
-  // Dibujar fondo
-  background(fondo);
+  // Dibujar el fondo
+  image(fondoImg, 0, 0, width, height);
 
-  // Línea intermitente
-  stroke(255);
-  strokeWeight(2);
-  for (let y = 0; y < height; y += 20) {
-    if ((frameCount / 10) % 2 < 1) {
-      line(width / 2, y, width / 2, y + 10);
-    }
-  }
+  // Dibujar la línea divisoria
+  stroke(255); // Color blanco
+  strokeWeight(2); // Grosor de la línea
+  line(width / 2, 0, width / 2, height);
 
-  // Dibujar puntaje en la cancha
-  textSize(32);
-  fill(jugadorColor);
+  // Mostrar nombres y puntajes en la parte superior
+  noStroke();
+  fill(255); // Color blanco para texto
   textAlign(CENTER, CENTER);
-  text(jugadorPuntaje, width / 4, 30);
-
-  fill(pcColor);
-  text(pcPuntaje, (3 * width) / 4, 30);
+  textSize(16);
+  text(`${jugadorNombre}: ${jugadorPuntaje}`, width / 4, 20); // Nombre y puntaje del jugador
+  text(`PC: ${pcPuntaje}`, (3 * width) / 4, 20);             // Nombre y puntaje del PC
 
   if (juegoActivo) {
-    // Dibujar la pelota
-    fill(255);
-    ellipse(pelota.x, pelota.y, pelota.r * 2);
+    // Dibujar la pelota como una imagen
+    image(bolaImg, pelota.x - pelota.r, pelota.y - pelota.r, pelota.r * 2, pelota.r * 2);
 
     // Mover la pelota
     pelota.x += pelota.vx;
@@ -123,9 +118,6 @@ function draw() {
 
     // Movimiento del PC (automático)
     pc.y = constrain(pelota.y - pc.h / 2, 0, height - pc.h);
-
-    // Actualizar el puntaje en el marcador
-    updateScore();
   }
 }
 
@@ -133,10 +125,6 @@ function resetPelota() {
   pelota.x = width / 2;
   pelota.y = height / 2;
   pelota.vx *= -1; // Cambiar dirección de la pelota
-}
-
-function updateScore() {
-  document.getElementById("score").innerText = `Puntaje: ${jugadorPuntaje} - ${pcPuntaje}`;
 }
 
 function iniciarJuego() {
@@ -166,4 +154,3 @@ function togglePause() {
     document.getElementById("pauseButton").innerText = "Reanudar";
   }
 }
-
