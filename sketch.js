@@ -85,6 +85,7 @@ function draw() {
       resetPelota();
     }
 
+
     // Dibujar las raquetas
     fill(jugadorColor);
     rect(jugador.x, jugador.y, jugador.w, jugador.h);
@@ -102,6 +103,24 @@ function draw() {
     updateScore();
   }
 }
+
+
+function dibujarMarcos() {
+    fill(255);
+    rect(0, 0, width, grosorMarco); // Marco superior
+    rect(0, height - grosorMarco, width, grosorMarco); // Marco inferior
+}
+
+
+function mostrarPuntaje() {
+    textSize(32);
+    textAlign(CENTER, CENTER);
+    fill(255);
+    text(jugadorScore, width / 4, grosorMarco * 3);
+    text(computadoraScore, 3 * width / 4, grosorMarco * 3);
+}
+
+
 
 function resetPelota() {
   pelota.x = width / 2;
