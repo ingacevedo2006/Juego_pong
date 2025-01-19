@@ -27,16 +27,13 @@ let bola;
 let sonidoRebote;
 let sonidoGol;
 
-// Historial de partidos
-let historialPartidos = [];
-
 function preload() {
     fondo = loadImage('fondo1.png');
     barraJugador = loadImage('barra1.png');
     barraComputadora = loadImage('barra2.png');
     bola = loadImage('bola.png');
-    sonidoRebote = loadSound('woosh-230554.mp3');
-    sonidoGol = loadSound('cancel-36118.mp3');
+    sonidoRebote = loadSound('bounce.wav');
+    sonidoGol = loadSound('jingle_win_synth_02.wav');
 }
 
 function setup() {
@@ -44,11 +41,6 @@ function setup() {
     jugadorY = height / 2 - altoRaqueta / 2;
     computadoraY = height / 2 - altoRaqueta / 2;
     resetPelota();
-    // Crear el botón de reinicio
-    let botonReinicio = createButton('Nuevo Juego');
-    botonReinicio.position(width / 2 - 50, height / 2 + 50);
-    botonReinicio.mousePressed(reiniciarJuego);
-    botonReinicio.hide(); // Se oculta el botón al principio
 }
 
 function draw() {
@@ -115,39 +107,38 @@ function moverComputadora() {
 }
 
 function verificarColisiones() {
+    // Colisión con la raqueta del jugador
+    if (pelotaX - diametroPelota / 2 < jugadorX + anchoRaqueta && 
+        pelotaY > jugadorY && pelotaY < jugadorY + altoRaqueta) {
+        let puntoImpacto = pelotaY - (jugadorY + altoRaqueta / 2);
+        let factorAngulo = (puntoImpacto / (altoRaqueta / 2)) * PI / 3; // Ángulo máximo de 60 grados
+        velocidadPelotaY = 10 * sin(factorAngulo);
+        velocidadPelotaX *= -1;
+        sonidoRebote.play(); // Reproducir sonido de rebote
+    }
+
+    // Colisión con la raqueta de la computadora
+    if (pelotaX + diametroPelota / 2 > computadoraX && 
+        pelotaY > computadoraY && pelotaY < computadoraY + altoRaqueta) {
+        let puntoImpacto = pelotaY - (computadoraY + altoRaqueta / 2);
+        let factorAngulo = (puntoImpacto / (altoRaqueta / 2)) * PI / 3; // Ángulo máximo de 60 grados
+        velocidadPelotaY = 10 * sin(factorAngulo);
+        velocidadPelotaX *= -1;
+        sonidoRebote.play(); // Reproducir sonido de rebote
+    }
+
     // Colisión con los bordes izquierdo y derecho (anotación y reinicio)
     if (pelotaX < 0) {
         computadoraScore++;
         sonidoGol.play(); // Reproducir sonido de gol
         narrarMarcador(); // Narrar marcador
-        if (computadoraScore >= 3) {
-            mostrarMensajeFinal("¡Computadora ha ganado!");
-            noLoop(); // Detener el juego
-            historialPartidos.push({jugador: jugadorScore, computadora: computadoraScore}); // Guardar el partido
-            mostrarHistorial();
-        } else {
-            resetPelota();
-        }
+        resetPelota();
     } else if (pelotaX > width) {
         jugadorScore++;
         sonidoGol.play(); // Reproducir sonido de gol
         narrarMarcador(); // Narrar marcador
-        if (jugadorScore >= 3) {
-            mostrarMensajeFinal("¡Jugador ha ganado!");
-            noLoop(); // Detener el juego
-            historialPartidos.push({jugador: jugadorScore, computadora: computadoraScore}); // Guardar el partido
-            mostrarHistorial();
-        } else {
-            resetPelota();
-        }
+        resetPelota();
     }
-}
-
-function mostrarMensajeFinal(texto) {
-    textSize(48);
-    textAlign(CENTER, CENTER);
-    fill(255, 0, 0); // Color rojo
-    text(texto, width / 2, height / 2);
 }
 
 function narrarMarcador() {
@@ -170,23 +161,4 @@ function keyPressed() {
         jugadorY += 50;
     }
     jugadorY = constrain(jugadorY, grosorMarco, height - grosorMarco - altoRaqueta);
-}
-
-// Función para reiniciar el juego
-function reiniciarJuego() {
-    jugadorScore = 0;
-    computadoraScore = 0;
-    resetPelota();
-    loop(); // Reanudar el ciclo del juego
-    // Volver a ocultar el botón
-    select('button').hide();
-}
-
-// Mostrar historial de partidos
-function mostrarHistorial() {
-    let historial = 'Historial de Partidos:\n';
-    historialPartidos.forEach((partido, index) => {
-        historial += `Partido ${index + 1}: Jugador ${partido.jugador} - Computadora ${partido.computadora}\n`;
-    });
-    alert(historial); // Mostrar en un cuadro de alerta, puedes personalizar la presentación
 }
