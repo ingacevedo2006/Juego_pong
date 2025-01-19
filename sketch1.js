@@ -32,8 +32,8 @@ function preload() {
     barraJugador = loadImage('barra1.png');
     barraComputadora = loadImage('barra2.png');
     bola = loadImage('bola.png');
-    sonidoRebote = loadSound('bounce.wav');
-    sonidoGol = loadSound('jingle_win_synth_02.wav');
+    sonidoRebote = loadSound('woosh-230554.mp3');
+    sonidoGol = loadSound('cancel-36118.mp3');
 }
 
 function setup() {
