@@ -39,12 +39,12 @@ function draw() {
 function mostrarPantallaInicial() {
   background(0); // Fondo negro
   fill(255); // Texto blanco
-  textSize(32);
+  textSize(42);
   textAlign(CENTER, CENTER);
   text("JUEGO PONG", width / 2, height / 4);
-  textSize(20);
+  textSize(12);
   text("Realizado por: Sandra", width / 2, height / 4 + 40);
-  textSize(18);
+  textSize(14);
   text("Por favor ingresa tu nombre para comenzar:", width / 2, height / 2 - 30);
 
   // Posición ajustada para el cuadro de entrada y el botón
