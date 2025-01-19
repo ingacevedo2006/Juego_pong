@@ -1,157 +1,178 @@
-let jugadorNombre = "Jugador";
-let jugadorColor = "#3498db";
-let pcColor = "#e74c3c";
-
-let pelota;
-let jugador;
-let pc;
-let jugadorPuntaje = 0;
-let pcPuntaje = 0;
+// Variables globales
 let juegoActivo = false;
-let anguloPelota = 0;
+let fondoImg, bolaImg;
+let nombreJugador = "";
+let puntajeJugador = 0;
+let puntajePC = 0;
 
-let fondoImg; // Imagen de fondo
-let bolaImg;  // Imagen de la pelota
+// Tamaño de la pelota y velocidad
+let pelota;
+let velocidadPelota = { x: 4, y: 3 };
+
+// Raquetas
+let jugador, pc;
 
 function preload() {
+  // Carga las imágenes de fondo y pelota
   fondoImg = loadImage("fondo2.png");
   bolaImg = loadImage("bola.png");
 }
 
 function setup() {
-  let canvas = createCanvas(800, 400);
-  canvas.parent("canvas-container");
-  noLoop();
-
-  pelota = { x: width / 2, y: height / 2, r: 10, vx: 5, vy: 5, velocidad: 5 };
-
-  jugador = { x: 20, y: height / 2 - 50, w: 10, h: 100 };
-  pc = { x: width - 30, y: height / 2 - 50, w: 10, h: 100 };
+  createCanvas(800, 400);
+  // Inicializa las raquetas y pelota
+  jugador = { x: 10, y: height / 2 - 50, w: 10, h: 100 };
+  pc = { x: width - 20, y: height / 2 - 50, w: 10, h: 100 };
+  pelota = { x: width / 2, y: height / 2, d: 20 };
+  noLoop(); // El juego no inicia hasta que el usuario haga clic en "Iniciar"
 }
 
 function draw() {
-  // Dibuja el fondo (imagen o color alternativo)
-  if (fondoImg) {
-    background(fondoImg);
+  if (!juegoActivo) {
+    mostrarPantallaInicial();
   } else {
-    background(0); // Negro si no se encuentra la imagen
+    mostrarJuego();
   }
+}
 
-  // Dibujar marcos
-  stroke(255);
-  strokeWeight(5);
-  line(0, 0, width, 0); // Marco superior
-  line(0, height, width, height); // Marco inferior
+// Pantalla inicial
+function mostrarPantallaInicial() {
+  background(0); // Fondo negro
+  fill(255); // Texto blanco
+  textSize(32);
+  textAlign(CENTER, CENTER);
+  text("JUEGO PONG", width / 2, height / 4);
+  textSize(20);
+  text("Realizado por: Sandra", width / 2, height / 4 + 40);
+  textSize(18);
+  text("Por favor ingresa tu nombre para comenzar:", width / 2, height / 2 - 30);
+
+  // Cuadro de entrada para el nombre
+  let input = createInput().position(width / 2 - 100, height / 2);
+  input.input(() => {
+    nombreJugador = input.value();
+  });
+
+  // Botón para iniciar el juego
+  let boton = createButton("Iniciar Juego").position(width / 2 - 50, height / 2 + 40);
+  boton.mousePressed(() => {
+    if (nombreJugador.trim() !== "") {
+      juegoActivo = true;
+      input.remove();
+      boton.remove();
+      loop(); // Inicia el bucle de juego
+    } else {
+      alert("Por favor, ingresa tu nombre para comenzar.");
+    }
+  });
+}
+
+// Juego
+function mostrarJuego() {
+  background(fondoImg);
 
   // Dibujar línea divisoria
+  stroke(255);
   strokeWeight(2);
   line(width / 2, 0, width / 2, height);
 
-  // Dibujar nombres y puntajes
-  fill(255);
+  // Dibujar marcos superior e inferior
+  noStroke();
+  fill(200);
+  rect(0, 0, width, 10); // Marco superior
+  rect(0, height - 10, width, 10); // Marco inferior
+
+  // Mostrar nombres y puntajes
   textSize(16);
+  fill(255);
   textAlign(CENTER, CENTER);
-  text(`${jugadorNombre}: ${jugadorPuntaje}`, width / 4, 20);
-  text(`PC: ${pcPuntaje}`, (3 * width) / 4, 20);
+  text(`${nombreJugador}: ${puntajeJugador}`, width / 4, 20);
+  text(`PC: ${puntajePC}`, (3 * width) / 4, 20);
 
-  // Solo dibujar elementos del juego si está activo
-  if (juegoActivo) {
-    // Pelota con rotación
-    push();
-    translate(pelota.x, pelota.y);
-    rotate(radians(anguloPelota));
-    if (bolaImg) {
-      image(bolaImg, -pelota.r, -pelota.r, pelota.r * 2, pelota.r * 2);
-    } else {
-      fill(255, 0, 0);
-      ellipse(0, 0, pelota.r * 2);
-    }
-    pop();
+  // Dibujar raquetas
+  fill(255, 0, 0); // Raqueta del jugador
+  rect(jugador.x, jugador.y, jugador.w, jugador.h);
+  fill(0, 0, 255); // Raqueta de la PC
+  rect(pc.x, pc.y, pc.w, pc.h);
 
-    // Actualización de la pelota y las colisiones
-    pelota.x += pelota.vx;
-    pelota.y += pelota.vy;
+  // Dibujar pelota
+  image(bolaImg, pelota.x - pelota.d / 2, pelota.y - pelota.d / 2, pelota.d, pelota.d);
 
-    if (pelota.y <= 0 || pelota.y >= height) {
-      pelota.vy *= -1;
-      anguloPelota += 45;
-    }
+  // Mover la pelota
+  moverPelota();
 
-    if (
-      pelota.x - pelota.r < jugador.x + jugador.w &&
-      pelota.y > jugador.y &&
-      pelota.y < jugador.y + jugador.h
-    ) {
-      pelota.vx *= -1.1;
-      anguloPelota += 45;
-    }
+  // Mover raqueta de la PC
+  moverRaquetaPC();
+}
 
-    if (
-      pelota.x + pelota.r > pc.x &&
-      pelota.y > pc.y &&
-      pelota.y < pc.y + pc.h
-    ) {
-      pelota.vx *= -1.1;
-      anguloPelota += 45;
-    }
+function moverPelota() {
+  pelota.x += velocidadPelota.x;
+  pelota.y += velocidadPelota.y;
 
-    // Verificar goles
-    if (pelota.x < 0) {
-      pcPuntaje++;
-      narrarGol("Gol del PC");
-      resetPelota();
-    } else if (pelota.x > width) {
-      jugadorPuntaje++;
-      narrarGol(`Gol de ${jugadorNombre}`);
-      resetPelota();
-    }
+  // Rebote en marcos superior e inferior
+  if (pelota.y - pelota.d / 2 <= 10 || pelota.y + pelota.d / 2 >= height - 10) {
+    velocidadPelota.y *= -1; // Cambia la dirección vertical
+  }
 
-    // Dibuja las raquetas
-    fill(jugadorColor);
-    rect(jugador.x, jugador.y, jugador.w, jugador.h);
+  // Rebote en raquetas
+  if (
+    pelota.x - pelota.d / 2 <= jugador.x + jugador.w &&
+    pelota.y >= jugador.y &&
+    pelota.y <= jugador.y + jugador.h
+  ) {
+    velocidadPelota.x *= -1; // Rebote en la raqueta del jugador
+    velocidadPelota.x *= 1.1; // Incrementa la velocidad
+    velocidadPelota.y += random(-2, 2); // Rotación aleatoria
+  } else if (
+    pelota.x + pelota.d / 2 >= pc.x &&
+    pelota.y >= pc.y &&
+    pelota.y <= pc.y + pc.h
+  ) {
+    velocidadPelota.x *= -1; // Rebote en la raqueta de la PC
+    velocidadPelota.x *= 1.1; // Incrementa la velocidad
+    velocidadPelota.y += random(-2, 2); // Rotación aleatoria
+  }
 
-    fill(pcColor);
-    rect(pc.x, pc.y, pc.w, pc.h);
-
-    // Movimiento del jugador y PC
-    jugador.y = constrain(mouseY - jugador.h / 2, 0, height - jugador.h);
-    pc.y = constrain(pelota.y - pc.h / 2, 0, height - pc.h);
+  // Anotación
+  if (pelota.x < 0) {
+    puntajePC++;
+    reiniciarPelota();
+    narrarGol("¡Punto para el PC!");
+  } else if (pelota.x > width) {
+    puntajeJugador++;
+    reiniciarPelota();
+    narrarGol(`¡Punto para ${nombreJugador}!`);
   }
 }
 
+function moverRaquetaPC() {
+  if (pelota.y < pc.y + pc.h / 2) {
+    pc.y -= 3; // La raqueta del PC sube
+  } else if (pelota.y > pc.y + pc.h / 2) {
+    pc.y += 3; // La raqueta del PC baja
+  }
+}
 
-function resetPelota() {
+function reiniciarPelota() {
   pelota.x = width / 2;
   pelota.y = height / 2;
-  pelota.vx = random([-5, 5]);
-  pelota.vy = random([-3, 3]);
+  velocidadPelota.x = random([-4, 4]);
+  velocidadPelota.y = random([-3, 3]);
 }
 
-function iniciarJuego() {
-  const inputNombre = document.getElementById("nombre-jugador").value;
-  if (inputNombre.trim() === "") {
-    alert("Por favor, ingresa tu nombre antes de comenzar.");
-    return;
-  }
-  jugadorNombre = inputNombre;
-  document.getElementById("pantalla-inicial").style.display = "none";
-  document.getElementById("panel-juego").style.display = "flex";
-  juegoActivo = true;
-  loop();
-}
-
-function togglePause() {
-  juegoActivo = !juegoActivo;
-  if (juegoActivo) {
-    loop();
-  } else {
-    noLoop();
+// Control de raqueta del jugador
+function keyPressed() {
+  if (key === "ArrowUp" && jugador.y > 10) {
+    jugador.y -= 10;
+  } else if (key === "ArrowDown" && jugador.y < height - jugador.h - 10) {
+    jugador.y += 10;
   }
 }
 
-function narrarGol(texto) {
-  let mensaje = new SpeechSynthesisUtterance(texto);
-  mensaje.lang = "es-ES";
-  speechSynthesis.speak(mensaje);
+// Narrar gol con síntesis de voz
+function narrarGol(mensaje) {
+  let narrador = new SpeechSynthesisUtterance(mensaje);
+  narrador.lang = "es-ES";
+  window.speechSynthesis.speak(narrador);
 }
 
