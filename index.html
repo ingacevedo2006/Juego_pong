@@ -1,27 +1,39 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Juego Pong</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Juego clásico Pong creado con p5.js" />
+  <link rel="icon" href="icono.png" />
+  <title>Juego Pong - Realizado por Sandra</title>
   <style>
     body {
       margin: 0;
       padding: 0;
+      background-color: black;
+      color: white;
+      font-family: Arial, sans-serif;
       display: flex;
       justify-content: center;
       align-items: center;
-      background-color: blue;
-      color: white;
+      height: 100vh;
+      overflow: hidden;
     }
     canvas {
       display: block;
+      border: 4px solid white;
     }
   </style>
 </head>
 <body>
-  <script src="juego.js"></script>
+  <main>
+    <!-- El canvas se generará aquí automáticamente con p5.js -->
+  </main>
+
+  <!-- Biblioteca p5.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.js"></script>
+
+  <!-- Archivo del juego -->
+  <script src="sketch.js"></script>
 </body>
 </html>
-
